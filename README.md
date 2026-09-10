@@ -20,9 +20,9 @@ Organizar a produção de forma mais eficiente, reduzindo atrasos, sobrecarga de
 
 ## 👥 Equipe
 
-- Integrante 1
-- Integrante 2
-- Integrante 3
+- Integrante 1 Rayssa 
+- Integrante 2 Celliny
+- Integrante 3 Lívia
 
 ## 📋 Principais funcionalidades
 

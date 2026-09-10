@@ -36,6 +36,24 @@ Organizar a produção de forma mais eficiente, reduzindo atrasos, sobrecarga de
 - Registro de alterações manuais
 - Indicadores de produção
 
+-  ## 📝 Padrão de commits
+
+Para manter o histórico do projeto organizado, utilizaremos:
+
+- `feat`: nova funcionalidade
+- `fix`: correção de erro
+- `docs`: alteração na documentação
+- `style`: alteração visual ou formatação
+- `test`: testes do sistema
+
+### Exemplos
+
+feat: criar cadastro de OF
+
+fix: corrigir fila de produção
+
+docs: atualizar README
+
 ## 🚧 Status
 
 Projeto em desenvolvimento.

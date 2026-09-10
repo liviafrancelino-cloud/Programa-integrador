@@ -60,17 +60,10 @@ Projeto em desenvolvimento.
 
 - ## FLUXO QUE ESTAMOS PLANEJANDO:
 -  SISTEMA
-       ↓
 -HTML + CSS + JavaScript
-       ↓
 -Google Apps Script
-       ↓
 -Requisição HTTP
-       ↓
 -Supabase
-       ↓
 -PostgreSQL
-          ↓
-     Apps Script
-          ↓
-        MySQL
+-Apps Script
+-MySQL

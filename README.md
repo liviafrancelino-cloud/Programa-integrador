@@ -67,3 +67,5 @@ Projeto em desenvolvimento.
 -PostgreSQL
 -Apps Script
 -MySQL
+
+Dependências: não são necessárias inicialmente, pois o backend será desenvolvido com Google Apps Script e a comunicação com o Supabase será feita por requisições HTTP.

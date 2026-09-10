@@ -57,3 +57,10 @@ docs: atualizar README
 ## 🚧 Status
 
 Projeto em desenvolvimento.
+
+- ## FLUXO QUE ESTAMOS PLANEJANDO:
+- HTML + CSS + JavaScript
+          ↓
+     Apps Script
+          ↓
+        MySQL

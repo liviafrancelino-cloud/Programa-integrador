@@ -59,7 +59,17 @@ docs: atualizar README
 Projeto em desenvolvimento.
 
 - ## FLUXO QUE ESTAMOS PLANEJANDO:
-- HTML + CSS + JavaScript
+-  SISTEMA
+       ↓
+-HTML + CSS + JavaScript
+       ↓
+-Google Apps Script
+       ↓
+-Requisição HTTP
+       ↓
+-Supabase
+       ↓
+-PostgreSQL
           ↓
      Apps Script
           ↓

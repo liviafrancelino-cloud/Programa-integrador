@@ -9,6 +9,7 @@
 // ==========================================================
 
 const ordensFabricacao = [
+
     {
         codigo: "OF001",
         dataEntrega: "2026-09-15",
@@ -64,6 +65,7 @@ const ordensFabricacao = [
 // ==========================================================
 
 const maquinas = [
+
     {
         codigo: "M01",
         nome: "Impressora 01",
@@ -100,6 +102,7 @@ const maquinas = [
 // Quanto menor o número, maior a prioridade.
 
 const prioridadeCores = {
+
     "Branco": 1,
     "Amarelo": 2,
     "Azul": 3,
@@ -130,9 +133,11 @@ function sequenciarOrdens(ordens) {
         // --------------------------------------------------
 
         const diferencaData =
-            new Date(a.dataEntrega) - new Date(b.dataEntrega);
+            new Date(a.dataEntrega) -
+            new Date(b.dataEntrega);
 
         if (diferencaData !== 0) {
+
             return diferencaData;
         }
 
@@ -148,6 +153,7 @@ function sequenciarOrdens(ordens) {
             prioridadeCores[b.cor] ?? 999;
 
         if (prioridadeA !== prioridadeB) {
+
             return prioridadeA - prioridadeB;
         }
 
@@ -160,6 +166,7 @@ function sequenciarOrdens(ordens) {
             a.medida.localeCompare(b.medida);
 
         if (diferencaMedida !== 0) {
+
             return diferencaMedida;
         }
 
@@ -168,7 +175,8 @@ function sequenciarOrdens(ordens) {
         // 4º CRITÉRIO: ORDEM DE CADASTRO
         // --------------------------------------------------
 
-        return a.ordemCadastro - b.ordemCadastro;
+        return a.ordemCadastro -
+            b.ordemCadastro;
     });
 }
 
@@ -177,52 +185,74 @@ function sequenciarOrdens(ordens) {
 // 6. CRIAR A FILA NORMAL
 // ==========================================================
 
-let filaProducao = sequenciarOrdens(ordensFabricacao);
+let filaProducao =
+    sequenciarOrdens(ordensFabricacao);
 
 
 // ==========================================================
 // 7. FUNÇÃO PARA COLOCAR UMA OF COMO URGENTE
 // ==========================================================
 
-function colocarComoUrgente(codigoOF, usuario, motivo) {
+function colocarComoUrgente(
+    codigoOF,
+    usuario,
+    motivo
+) {
 
-    const indice = filaProducao.findIndex(
-        of => of.codigo === codigoOF
-    );
+    const indice =
+        filaProducao.findIndex(
+            of => of.codigo === codigoOF
+        );
 
 
     // Verificar se a OF existe
+
     if (indice === -1) {
-        console.log(`OF ${codigoOF} não encontrada.`);
+
+        console.log(
+            `OF ${codigoOF} não encontrada.`
+        );
+
         return;
     }
 
 
     // Verificar se já está na primeira posição
+
     if (indice === 0) {
-        console.log(`OF ${codigoOF} já está no início da fila.`);
+
+        console.log(
+            `OF ${codigoOF} já está no início da fila.`
+        );
+
         return;
     }
 
 
     // Guardar posição anterior
-    const posicaoAnterior = indice + 1;
+
+    const posicaoAnterior =
+        indice + 1;
 
 
     // Retirar a OF da fila
+
     const [ofUrgente] =
         filaProducao.splice(indice, 1);
 
 
     // Marcar como urgente
+
     ofUrgente.urgente = true;
 
 
     // Colocar no início da fila
+
     filaProducao.unshift(ofUrgente);
 
 
     // Registrar alteração
+
     alteracoesFila.push({
 
         codigoOF: codigoOF,
@@ -233,7 +263,8 @@ function colocarComoUrgente(codigoOF, usuario, motivo) {
 
         motivo: motivo,
 
-        posicaoAnterior: posicaoAnterior,
+        posicaoAnterior:
+            posicaoAnterior,
 
         novaPosicao: 1
     });
@@ -251,8 +282,11 @@ filaProducao
     .forEach(ofUrgente => {
 
         colocarComoUrgente(
+
             ofUrgente.codigo,
+
             "João - PCP",
+
             "Cliente solicitou antecipação da entrega"
         );
     });
@@ -266,6 +300,7 @@ function distribuirMaquinas(fila) {
 
     fila.forEach(of => {
 
+
         // --------------------------------------------------
         // OF ESPECÍFICA
         // --------------------------------------------------
@@ -277,13 +312,52 @@ function distribuirMaquinas(fila) {
                     m => m.codigo === of.maquina
                 );
 
-            if (maquina) {
+
+            // Máquina não encontrada
+
+            if (!maquina) {
+
+                console.log(
+                    `Máquina ${of.maquina} não encontrada para ${of.codigo}.`
+                );
+
+                return;
+            }
+
+
+            // Calcular capacidade restante
+
+            const capacidadeRestante =
+                maquina.capacidadeHoras -
+                maquina.horasOcupadas;
+
+
+            // Verificar se a OF cabe na máquina
+
+            if (
+                of.tempoProducao <=
+                capacidadeRestante
+            ) {
 
                 maquina.horasOcupadas +=
                     of.tempoProducao;
 
+
                 console.log(
                     `${of.codigo} direcionada para ${maquina.codigo}`
+                );
+
+            } else {
+
+                console.log(
+
+                    `NÃO FOI POSSÍVEL PROGRAMAR ${of.codigo} na ${maquina.codigo}.`
+                );
+
+                console.log(
+
+                    `Capacidade disponível: ${capacidadeRestante}h | ` +
+                    `Tempo necessário: ${of.tempoProducao}h`
                 );
             }
 
@@ -297,17 +371,26 @@ function distribuirMaquinas(fila) {
 
         const maquinasDisponiveis =
             maquinas.filter(
+
                 m =>
+
                     m.status === "Disponível" &&
-                    m.horasOcupadas + of.tempoProducao
-                    <= m.capacidadeHoras
+
+                    m.horasOcupadas +
+                    of.tempoProducao
+                    <=
+                    m.capacidadeHoras
             );
 
 
         // Verificar se existe máquina disponível
-        if (maquinasDisponiveis.length === 0) {
+
+        if (
+            maquinasDisponiveis.length === 0
+        ) {
 
             console.log(
+
                 `Não há capacidade disponível para ${of.codigo}.`
             );
 
@@ -315,8 +398,12 @@ function distribuirMaquinas(fila) {
         }
 
 
-        // Escolher a máquina com menor carga
+        // --------------------------------------------------
+        // ESCOLHER A MÁQUINA COM MENOR CARGA
+        // --------------------------------------------------
+
         maquinasDisponiveis.sort(
+
             (a, b) =>
                 a.horasOcupadas -
                 b.horasOcupadas
@@ -328,23 +415,29 @@ function distribuirMaquinas(fila) {
 
 
         // Definir a máquina da OF
+
         of.maquina =
             maquinaEscolhida.codigo;
 
 
         // Atualizar carga
+
         maquinaEscolhida.horasOcupadas +=
             of.tempoProducao;
 
 
         console.log(
+
             `${of.codigo} distribuída para ${maquinaEscolhida.codigo}`
         );
     });
 }
 
 
-// Executar distribuição
+// ==========================================================
+// EXECUTAR DISTRIBUIÇÃO
+// ==========================================================
+
 distribuirMaquinas(filaProducao);
 
 
@@ -371,12 +464,16 @@ function verificarTrocaDeCor(fila) {
 
 
         // Atualizar última cor produzida
+
         ultimaCor = of.cor;
     });
 }
 
 
-// Executar verificação
+// ==========================================================
+// EXECUTAR VERIFICAÇÃO
+// ==========================================================
+
 verificarTrocaDeCor(filaProducao);
 
 
@@ -416,77 +513,130 @@ const filasMaquinas =
 // 12. MOSTRAR FILA GERAL
 // ==========================================================
 
-console.log("\n=================================");
-console.log("FILA GERAL DE PRODUÇÃO");
-console.log("=================================");
+console.log(
+    "\n================================="
+);
+
+console.log(
+    "FILA GERAL DE PRODUÇÃO"
+);
+
+console.log(
+    "================================="
+);
 
 
-filaProducao.forEach((of, indice) => {
+filaProducao.forEach(
+    (of, indice) => {
 
-    console.log(
-        `${indice + 1}º - ` +
-        `${of.codigo} | ` +
-        `Entrega: ${of.dataEntrega} | ` +
-        `Cor: ${of.cor} | ` +
-        `Medida: ${of.medida} | ` +
-        `Máquina: ${of.maquina} | ` +
-        `Urgente: ${of.urgente ? "SIM" : "NÃO"} | ` +
-        `Troca de cor: ${of.trocaCor ? "SIM" : "NÃO"}`
-    );
-});
+        console.log(
+
+            `${indice + 1}º - ` +
+
+            `${of.codigo} | ` +
+
+            `Entrega: ${of.dataEntrega} | ` +
+
+            `Cor: ${of.cor} | ` +
+
+            `Medida: ${of.medida} | ` +
+
+            `Máquina: ${of.maquina ?? "Não programada"} | ` +
+
+            `Urgente: ${of.urgente ? "SIM" : "NÃO"} | ` +
+
+            `Troca de cor: ${of.trocaCor ? "SIM" : "NÃO"}`
+        );
+    }
+);
 
 
 // ==========================================================
 // 13. MOSTRAR FILA DE CADA MÁQUINA
 // ==========================================================
 
-console.log("\n=================================");
-console.log("FILAS POR MÁQUINA");
-console.log("=================================");
+console.log(
+    "\n================================="
+);
+
+console.log(
+    "FILAS POR MÁQUINA"
+);
+
+console.log(
+    "================================="
+);
 
 
-Object.keys(filasMaquinas).forEach(codigoMaquina => {
+Object.keys(filasMaquinas)
+    .forEach(codigoMaquina => {
 
-    console.log(`\nMáquina ${codigoMaquina}:`);
-
-
-    if (filasMaquinas[codigoMaquina].length === 0) {
-
-        console.log("Nenhuma OF programada.");
-
-        return;
-    }
+        console.log(
+            `\nMáquina ${codigoMaquina}:`
+        );
 
 
-    filasMaquinas[codigoMaquina]
-        .forEach((of, indice) => {
+        if (
+            filasMaquinas[codigoMaquina]
+                .length === 0
+        ) {
 
             console.log(
-                `${indice + 1}º - ` +
-                `${of.codigo} | ` +
-                `Cor: ${of.cor} | ` +
-                `Medida: ${of.medida} | ` +
-                `Tempo: ${of.tempoProducao}h`
+                "Nenhuma OF programada."
             );
-        });
-});
+
+            return;
+        }
+
+
+        filasMaquinas[codigoMaquina]
+            .forEach(
+                (of, indice) => {
+
+                    console.log(
+
+                        `${indice + 1}º - ` +
+
+                        `${of.codigo} | ` +
+
+                        `Cor: ${of.cor} | ` +
+
+                        `Medida: ${of.medida} | ` +
+
+                        `Tempo: ${of.tempoProducao}h`
+                    );
+                }
+            );
+    });
 
 
 // ==========================================================
 // 14. MOSTRAR CARGA DAS MÁQUINAS
 // ==========================================================
 
-console.log("\n=================================");
-console.log("CARGA DAS MÁQUINAS");
-console.log("=================================");
+console.log(
+    "\n================================="
+);
+
+console.log(
+    "CARGA DAS MÁQUINAS"
+);
+
+console.log(
+    "================================="
+);
 
 
 maquinas.forEach(maquina => {
 
     console.log(
+
         `${maquina.codigo} - ` +
+
         `${maquina.nome} | ` +
+
         `Ocupação: ${maquina.horasOcupadas}h / ` +
+
         `${maquina.capacidadeHoras}h`
     );
 });
@@ -496,29 +646,59 @@ maquinas.forEach(maquina => {
 // 15. REGISTRO DE ALTERAÇÕES DA FILA
 // ==========================================================
 
-console.log("\n=================================");
-console.log("REGISTRO DE ALTERAÇÕES");
-console.log("=================================");
+console.log(
+    "\n================================="
+);
+
+console.log(
+    "REGISTRO DE ALTERAÇÕES"
+);
+
+console.log(
+    "================================="
+);
 
 
-if (alteracoesFila.length === 0) {
+if (
+    alteracoesFila.length === 0
+) {
 
-    console.log("Nenhuma alteração registrada.");
+    console.log(
+        "Nenhuma alteração registrada."
+    );
 
 } else {
 
-    alteracoesFila.forEach(alteracao => {
+    alteracoesFila.forEach(
+        alteracao => {
 
-        console.log(`OF: ${alteracao.codigoOF}`);
-        console.log(`Usuário: ${alteracao.usuario}`);
-        console.log(`Data e hora: ${alteracao.dataHora}`);
-        console.log(`Motivo: ${alteracao.motivo}`);
-        console.log(
-            `Posição anterior: ${alteracao.posicaoAnterior}`
-        );
-        console.log(
-            `Nova posição: ${alteracao.novaPosicao}`
-        );
-        console.log("-----------------------------");
-    });
+            console.log(
+                `OF: ${alteracao.codigoOF}`
+            );
+
+            console.log(
+                `Usuário: ${alteracao.usuario}`
+            );
+
+            console.log(
+                `Data e hora: ${alteracao.dataHora}`
+            );
+
+            console.log(
+                `Motivo: ${alteracao.motivo}`
+            );
+
+            console.log(
+                `Posição anterior: ${alteracao.posicaoAnterior}`
+            );
+
+            console.log(
+                `Nova posição: ${alteracao.novaPosicao}`
+            );
+
+            console.log(
+                "-----------------------------"
+            );
+        }
+    );
 }

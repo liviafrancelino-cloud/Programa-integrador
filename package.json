@@ -1,1 +1,14 @@
-
+{
+  "name": "programa-integrador",
+  "version": "1.0.0",
+  "description": "Projeto Integrador - Sistema de programação da produção",
+  "main": "algoritmo/sequenciamento.js",
+  "scripts": {
+    "testar": "node algoritmo/teste-supabase.js",
+    "sequenciamento": "node algoritmo/sequenciamento.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.0",
+    "dotenv": "^17.2.2"
+  }
+}

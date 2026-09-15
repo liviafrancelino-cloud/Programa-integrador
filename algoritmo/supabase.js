@@ -3,19 +3,24 @@
 // Projeto Integrador - Fábrica de Embalagens
 // ==========================================================
 
+require("dotenv").config({
+    path: require("path").resolve(__dirname, "../.env")
+});
+
 const { createClient } = require("@supabase/supabase-js");
 
-// URL do seu projeto Supabase
-const SUPABASE_URL = "https://cikukabbsmzjsdmsjosv.supabase.co";
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY;
 
-// Chave publicável do seu projeto Supabase
-const SUPABASE_KEY = "sb_publishable_59nCIbK4Ol9AhUX1V0e86g_gEz4BRkI";
+if (!SUPABASE_URL || !SUPABASE_SECRET_KEY) {
+    throw new Error(
+        "SUPABASE_URL ou SUPABASE_SECRET_KEY não foi configurada no arquivo .env"
+    );
+}
 
-// Cria a conexão com o Supabase
 const supabase = createClient(
     SUPABASE_URL,
-    SUPABASE_KEY
+    SUPABASE_SECRET_KEY
 );
 
-// Exporta a conexão para outros arquivos
 module.exports = supabase;

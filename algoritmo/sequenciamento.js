@@ -1,517 +1,138 @@
-// ==========================================================
-// PROJETO INTEGRADOR - FÁBRICA DE EMBALAGENS
-// ALGORITMO DE SEQUENCIAMENTO DA PRODUÇÃO
-// ==========================================================
 
-
-// ==========================================================
-// 1. LISTA DE ORDENS DE FABRICAÇÃO
-// ==========================================================
-
-const ordensFabricacao = [
-    {
-        codigo: "OF001",
-        dataEntrega: "2026-09-15",
-        cor: "Azul",
-        medida: "30x40",
-        tipoOF: "especifica",
-        maquina: "M01",
-        tempoProducao: 4,
-        urgente: false,
-        ordemCadastro: 1
-    },
-
-    {
-        codigo: "OF002",
-        dataEntrega: "2026-09-13",
-        cor: "Branco",
-        medida: "30x40",
-        tipoOF: "especifica",
-        maquina: "M01",
-        tempoProducao: 3,
-        urgente: false,
-        ordemCadastro: 2
-    },
-
-    {
-        codigo: "OF003",
-        dataEntrega: "2026-09-14",
-        cor: "Preto",
-        medida: "40x50",
-        tipoOF: "compartilhada",
-        maquina: null,
-        tempoProducao: 5,
-        urgente: true,
-        ordemCadastro: 3
-    },
-
-    {
-        codigo: "OF004",
-        dataEntrega: "2026-09-13",
-        cor: "Azul",
-        medida: "40x50",
-        tipoOF: "compartilhada",
-        maquina: null,
-        tempoProducao: 2,
-        urgente: false,
-        ordemCadastro: 4
-    }
-];
-
-
-// ==========================================================
-// 2. MÁQUINAS DISPONÍVEIS
-// ==========================================================
-
-const maquinas = [
-    {
-        codigo: "M01",
-        nome: "Impressora 01",
-        capacidadeHoras: 8,
-        horasOcupadas: 0,
-        corAtual: null,
-        status: "Disponível"
-    },
-
-    {
-        codigo: "M02",
-        nome: "Impressora 02",
-        capacidadeHoras: 8,
-        horasOcupadas: 0,
-        corAtual: null,
-        status: "Disponível"
-    },
-
-    {
-        codigo: "M03",
-        nome: "Impressora 03",
-        capacidadeHoras: 8,
-        horasOcupadas: 0,
-        corAtual: null,
-        status: "Disponível"
-    }
-];
-
-
-// ==========================================================
-// 3. PRIORIDADE DAS CORES
-// ==========================================================
-
-// Quanto menor o número, maior a prioridade.
-
-const prioridadeCores = {
-    "Branco": 1,
-    "Amarelo": 2,
-    "Azul": 3,
-    "Verde": 4,
-    "Vermelho": 5,
-    "Marrom": 6,
-    "Preto": 7
-};
-
-
-// ==========================================================
-// 4. REGISTRO DE ALTERAÇÕES
-// ==========================================================
-
-const alteracoesFila = [];
-
-
-// ==========================================================
-// 5. FUNÇÃO DE SEQUENCIAMENTO
-// ==========================================================
-
-function sequenciarOrdens(ordens) {
-
-    return [...ordens].sort((a, b) => {
-
-        // --------------------------------------------------
-        // 1º CRITÉRIO: DATA DE ENTREGA
-        // --------------------------------------------------
-
-        const diferencaData =
-            new Date(a.dataEntrega) - new Date(b.dataEntrega);
-
-        if (diferencaData !== 0) {
-            return diferencaData;
-        }
-
-
-        // --------------------------------------------------
-        // 2º CRITÉRIO: COR
-        // --------------------------------------------------
-
-        const prioridadeA =
-            prioridadeCores[a.cor] ?? 999;
-
-        const prioridadeB =
-            prioridadeCores[b.cor] ?? 999;
-
-        if (prioridadeA !== prioridadeB) {
-            return prioridadeA - prioridadeB;
-        }
-
-
-        // --------------------------------------------------
-        // 3º CRITÉRIO: MEDIDA
-        // --------------------------------------------------
-
-        const diferencaMedida =
-            a.medida.localeCompare(b.medida);
-
-        if (diferencaMedida !== 0) {
-            return diferencaMedida;
-        }
-
-
-        // --------------------------------------------------
-        // 4º CRITÉRIO: ORDEM DE CADASTRO
-        // --------------------------------------------------
-
-        return a.ordemCadastro - b.ordemCadastro;
-    });
-}
-
-
-// ==========================================================
-// 6. CRIAR A FILA NORMAL
-// ==========================================================
-
-let filaProducao = sequenciarOrdens(ordensFabricacao);
-
-
-// ==========================================================
-// 7. FUNÇÃO PARA COLOCAR UMA OF COMO URGENTE
-// ==========================================================
-
-function colocarComoUrgente(codigoOF, usuario, motivo) {
-
-    const indice = filaProducao.findIndex(
-        of => of.codigo === codigoOF
-    );
-
-
-    // Verificar se a OF existe
-    if (indice === -1) {
-        console.log(`OF ${codigoOF} não encontrada.`);
-        return;
-    }
-
-
-    // Verificar se já está na primeira posição
-    if (indice === 0) {
-        console.log(`OF ${codigoOF} já está no início da fila.`);
-        return;
-    }
-
-
-    // Guardar posição anterior
-    const posicaoAnterior = indice + 1;
-
-
-    // Retirar a OF da fila
-    const [ofUrgente] =
-        filaProducao.splice(indice, 1);
-
-
-    // Marcar como urgente
-    ofUrgente.urgente = true;
-
-
-    // Colocar no início da fila
-    filaProducao.unshift(ofUrgente);
-
-
-    // Registrar alteração
-    alteracoesFila.push({
-
-        codigoOF: codigoOF,
-
-        usuario: usuario,
-
-        dataHora: new Date(),
-
-        motivo: motivo,
-
-        posicaoAnterior: posicaoAnterior,
-
-        novaPosicao: 1
-    });
-}
-
-
-// ==========================================================
-// 8. TRATAMENTO DAS OFs URGENTES
-// ==========================================================
-
-// Exemplo de alteração feita pelo PCP.
-
-filaProducao
-    .filter(of => of.urgente)
-    .forEach(ofUrgente => {
-
-        colocarComoUrgente(
-            ofUrgente.codigo,
-            "João - PCP",
-            "Cliente solicitou antecipação da entrega"
-        );
-    });
-
-
-// ==========================================================
-// 9. DISTRIBUIÇÃO DAS OFs NAS MÁQUINAS
-// ==========================================================
-
-function distribuirMaquinas(fila) {
-
-    fila.forEach(of => {
-
-        of.maquinaProgramada = null;
-
-        if (of.tipoOF === "especifica") {
-
-            const maquina = maquinas.find(m => m.id === of.maquina);
-
-            if (!maquina) {
-                console.log(`Máquina ${of.maquina} não encontrada para ${of.codigo}`);
-                return;
-            }
-
-            const capacidadeRestante =
-                maquina.capacidadeHoras - maquina.horasOcupadas;
-
-            if (of.tempoProducao <= capacidadeRestante) {
-
-                maquina.horasOcupadas += of.tempoProducao;
-                of.maquinaProgramada = maquina.id;
-
-                console.log(
-                    `${of.codigo} direcionada para ${maquina.id}`
-                );
-
-            } else {
-
-                console.log(
-                    `NÃO FOI POSSÍVEL PROGRAMAR ${of.codigo} na ${maquina.id}.`
-                );
-
-                console.log(
-                    `Capacidade disponível: ${capacidadeRestante}h | ` +
-                    `Tempo necessário: ${of.tempoProducao}h`
-                );
-            }
-
-        } else {
-
-            const maquinasDisponiveis = maquinas.filter(maquina => {
-
-                const capacidadeRestante =
-                    maquina.capacidadeHoras - maquina.horasOcupadas;
-
-                return capacidadeRestante >= of.tempoProducao &&
-                       maquina.status === "Disponível";
-            });
-
-            if (maquinasDisponiveis.length === 0) {
-
-                console.log(
-                    `NÃO FOI POSSÍVEL PROGRAMAR ${of.codigo}.`
-                );
-
-                return;
-            }
-
-            maquinasDisponiveis.sort(
-                (a, b) => a.horasOcupadas - b.horasOcupadas
-            );
-
-            const maquinaEscolhida = maquinasDisponiveis[0];
-
-            maquinaEscolhida.horasOcupadas += of.tempoProducao;
-            of.maquinaProgramada = maquinaEscolhida.id;
-
-            console.log(
-                `${of.codigo} distribuída para ${maquinaEscolhida.id}`
-            );
-        }
-    });
-}
-
-
-// Executar distribuição
-distribuirMaquinas(filaProducao);
-
-
-// ==========================================================
-// 10. DETECTAR TROCAS DE COR
-// ==========================================================
-
-function verificarTrocaDeCor(fila) {
-
-    let ultimaCor = null;
-
-
-    fila.forEach(of => {
-
-        if (ultimaCor === null) {
-
-            of.trocaCor = false;
-
-        } else {
-
-            of.trocaCor =
-                ultimaCor !== of.cor;
-        }
-
-
-        // Atualizar última cor produzida
-        ultimaCor = of.cor;
-    });
-}
-
-
-// Executar verificação
-verificarTrocaDeCor(filaProducao);
-
-
-// ==========================================================
-// 11. ORGANIZAR FILA POR MÁQUINA
-// ==========================================================
-
-function criarFilasMaquinas(fila) {
-
-    const filas = {};
-
-
-    maquinas.forEach(maquina => {
-
-        filas[maquina.codigo] = [];
-    });
-
-
-    fila.forEach(of => {
-
-        if (of.maquinaProgramada) {
-    filas[of.maquinaProgramada].push(of);
-}
-    });
-
-
-    return filas;
-}
-
-
-const filasMaquinas =
-    criarFilasMaquinas(filaProducao);
-
-
-// ==========================================================
-// 12. MOSTRAR FILA GERAL
-// ==========================================================
-
-console.log("\n=================================");
-console.log("FILA GERAL DE PRODUÇÃO");
-console.log("=================================");
-
-
-filaProducao.forEach((of, indice) => {
-
-    console.log(
-        `${indice + 1}º - ` +
-        `${of.codigo} | ` +
-        `Entrega: ${of.dataEntrega} | ` +
-        `Cor: ${of.cor} | ` +
-        `Medida: ${of.medida} | ` +
-        `Máquina: ${of.maquinaProgramada ?? "Não programada"} | ` +
-        `Urgente: ${of.urgente ? "SIM" : "NÃO"} | ` +
-        `Troca de cor: ${of.trocaCor ? "SIM" : "NÃO"}`
-    );
-});
-
-
-// ==========================================================
-// 13. MOSTRAR FILA DE CADA MÁQUINA
-// ==========================================================
-
-console.log("\n=================================");
-console.log("FILAS POR MÁQUINA");
-console.log("=================================");
-
-
-Object.keys(filasMaquinas).forEach(codigoMaquina => {
-
-    console.log(`\nMáquina ${codigoMaquina}:`);
-
-
-    if (filasMaquinas[codigoMaquina].length === 0) {
-
-        console.log("Nenhuma OF programada.");
-
-        return;
-    }
-
-
-    filasMaquinas[codigoMaquina]
-        .forEach((of, indice) => {
-
-            console.log(
-                `${indice + 1}º - ` +
-                `${of.codigo} | ` +
-                `Cor: ${of.cor} | ` +
-                `Medida: ${of.medida} | ` +
-                `Tempo: ${of.tempoProducao}h`
-            );
-        });
-});
-
-
-// ==========================================================
-// 14. MOSTRAR CARGA DAS MÁQUINAS
-// ==========================================================
-
-console.log("\n=================================");
-console.log("CARGA DAS MÁQUINAS");
-console.log("=================================");
-
-
-maquinas.forEach(maquina => {
-
-    console.log(
-        `${maquina.codigo} - ` +
-        `${maquina.nome} | ` +
-        `Ocupação: ${maquina.horasOcupadas}h / ` +
-        `${maquina.capacidadeHoras}h`
-    );
-});
-
-
-// ==========================================================
-// 15. REGISTRO DE ALTERAÇÕES DA FILA
-// ==========================================================
-
-console.log("\n=================================");
-console.log("REGISTRO DE ALTERAÇÕES");
-console.log("=================================");
-
-
-if (alteracoesFila.length === 0) {
-
-    console.log("Nenhuma alteração registrada.");
-
-} else {
-
-    alteracoesFila.forEach(alteracao => {
-
-        console.log(`OF: ${alteracao.codigoOF}`);
-        console.log(`Usuário: ${alteracao.usuario}`);
-        console.log(`Data e hora: ${alteracao.dataHora}`);
-        console.log(`Motivo: ${alteracao.motivo}`);
-        console.log(
-            `Posição anterior: ${alteracao.posicaoAnterior}`
-        );
-        console.log(
-            `Nova posição: ${alteracao.novaPosicao}`
-        );
-        console.log("-----------------------------");
-    });
-}
+C:\Program Files\nodejs\node.exe .\sequenciamento.js
+
+========================================
+TESTE 1 - PRIORIDADE DE ENTREGA
+========================================
+Ordem: OF-B → OF-C → OF-A
+✅ PASSOU - A OF com entrega mais próxima fica primeiro
+
+========================================
+TESTE 2 - PRIORIDADE DE COR
+========================================
+Ordem: OF-B(Branco) → OF-C(Azul) → OF-A(Preto)
+✅ PASSOU - Branco tem prioridade sobre Azul
+✅ PASSOU - Azul tem prioridade sobre Preto
+
+========================================
+TESTE 3 - PRIORIDADE DE MEDIDA
+========================================
+Ordem: OF-B(30x40) → OF-A(40x50)
+✅ PASSOU - A medida é usada como terceiro critério
+
+========================================
+TESTE 4 - OF URGENTE
+========================================
+Ordem: OF003 → OF001 → OF002
+✅ PASSOU - OF urgente vai para a primeira posição
+✅ PASSOU - Alteração é registrada
+✅ PASSOU - Usuário é registrado
+✅ PASSOU - Motivo é registrado
+✅ PASSOU - Posição anterior é registrada
+✅ PASSOU - Nova posição é 1
+
+========================================
+TESTE 5 - CAPACIDADE DA MÁQUINA
+========================================
+OF001 direcionada para M01
+OF002 direcionada para M01
+NÃO FOI POSSÍVEL PROGRAMAR OF003 na M01.
+Capacidade disponível: 1h | Tempo necessário: 2h
+✅ PASSOU - OF001 foi programada na M01
+✅ PASSOU - OF002 foi programada na M01
+✅ PASSOU - OF003 não foi programada por falta de capacidade
+✅ PASSOU - M01 ficou com 7h
+
+========================================
+TESTE 6 - OF COMPARTILHADA
+========================================
+OF004 distribuída para M03
+OF004 ficou na M03
+✅ PASSOU - OF compartilhada vai para a máquina com menor carga
+
+========================================
+TESTE 7 - TROCA DE COR
+========================================
+OF001: SEM TROCA | OF002: SEM TROCA | OF003: TROCA | OF004: TROCA
+✅ PASSOU - Primeira OF não possui troca
+✅ PASSOU - Mesma cor não gera troca
+✅ PASSOU - Branco para Azul gera troca
+✅ PASSOU - Azul para Preto gera troca
+
+========================================
+TESTE 8 - FILAS POR MÁQUINA
+========================================
+M01: OF001, OF002
+M02: OF003
+M03: Nenhuma
+✅ PASSOU - M01 possui 2 OFs
+✅ PASSOU - M02 possui 1 OF
+✅ PASSOU - M03 está vazia
+✅ PASSOU - OF não programada não entra em nenhuma fila
+
+========================================
+TESTE 9 - CENÁRIO COMPLETO
+========================================
+OF003 distribuída para M01
+OF002 direcionada para M01
+OF004 distribuída para M02
+NÃO FOI POSSÍVEL PROGRAMAR OF001 na M01.
+Capacidade disponível: 0h | Tempo necessário: 4h
+
+========================================
+FILA GERAL DE PRODUÇÃO
+========================================
+1º - OF003 | Entrega: 2026-09-14 | Cor: Preto | Medida: 40x50 | Máquina: M01 | Urgente: SIM | Troca de cor: NÃO
+2º - OF002 | Entrega: 2026-09-13 | Cor: Branco | Medida: 30x40 | Máquina: M01 | Urgente: NÃO | Troca de cor: SIM
+3º - OF004 | Entrega: 2026-09-13 | Cor: Azul | Medida: 40x50 | Máquina: M02 | Urgente: NÃO | Troca de cor: SIM
+4º - OF001 | Entrega: 2026-09-15 | Cor: Azul | Medida: 30x40 | Máquina: Não programada | Urgente: NÃO | Troca de cor: NÃO
+
+========================================
+FILAS POR MÁQUINA
+========================================
+
+Máquina M01:
+1º - OF003 | Cor: Preto | Medida: 40x50 | Tempo: 5h
+2º - OF002 | Cor: Branco | Medida: 30x40 | Tempo: 3h
+
+Máquina M02:
+1º - OF004 | Cor: Azul | Medida: 40x50 | Tempo: 2h
+
+Máquina M03:
+Nenhuma OF programada.
+
+========================================
+CARGA DAS MÁQUINAS
+========================================
+M01 - Impressora 01 | Ocupação: 8h / 8h
+M02 - Impressora 02 | Ocupação: 2h / 8h
+M03 - Impressora 03 | Ocupação: 0h / 8h
+
+========================================
+REGISTRO DE ALTERAÇÕES
+========================================
+OF: OF003
+Usuário: João - PCP
+Data e hora: Tue Sep 15 2026 18:19:12 GMT-0300 (Horário Padrão de Brasília)
+Motivo: Cliente solicitou antecipação da entrega
+Posição anterior: 3
+Nova posição: 1
+-----------------------------
+✅ PASSOU - OF003 foi para M01
+✅ PASSOU - OF002 foi para M01
+✅ PASSOU - OF004 foi para M02
+✅ PASSOU - OF001 ficou não programada
+✅ PASSOU - M01 ficou com 8h
+✅ PASSOU - M02 ficou com 2h
+✅ PASSOU - OF001 não entrou na fila da M01
+✅ PASSOU - OF003 possui registro de alteração
+
+========================================
+RESUMO DOS TESTES
+========================================
+✅ Testes que passaram: 31
+❌ Testes que não passaram: 0
+📊 Total de testes: 31
+
+🎉 TODOS OS TESTES PASSARAM!
+========================================
